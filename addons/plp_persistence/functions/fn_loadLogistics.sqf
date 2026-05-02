@@ -53,6 +53,33 @@ private _skipped = 0;
                 _object setFuel (_record getOrDefault ["fuel", fuel _object]);
                 _object lock (_record getOrDefault ["locked", locked _object]);
 
+                private _supplyCargo = _record getOrDefault ["supplyCargo", createHashMap];
+                if (_supplyCargo isEqualType createHashMap) then {
+                    private _fuelCargo = _supplyCargo getOrDefault ["fuelCargo", -1];
+                    private _ammoCargo = _supplyCargo getOrDefault ["ammoCargo", -1];
+                    private _repairCargo = _supplyCargo getOrDefault ["repairCargo", -1];
+
+                    if (_fuelCargo isEqualType 0 && {_fuelCargo >= 0}) then {
+                        _object setFuelCargo _fuelCargo;
+                    };
+                    if (_ammoCargo isEqualType 0 && {_ammoCargo >= 0}) then {
+                        _object setAmmoCargo _ammoCargo;
+                    };
+                    if (_repairCargo isEqualType 0 && {_repairCargo >= 0}) then {
+                        _object setRepairCargo _repairCargo;
+                    };
+
+                    {
+                        private _value = _supplyCargo get _x;
+                        if (!isNil "_value") then {
+                            _object setVariable [_x, _value, true];
+                        };
+                    } forEach [
+                        "ace_refuel_currentFuelCargo",
+                        "ace_refuel_fuelCargo"
+                    ];
+                };
+
                 [_object, _record] call PLP_fnc_applyCargoData;
                 _loaded = _loaded + 1;
 

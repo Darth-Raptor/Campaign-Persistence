@@ -25,6 +25,10 @@ if !(_normalized getOrDefault ["deleted", false]) then {
             _normalized set [_x, []];
         };
     } forEach _cargoKeys;
+
+    if !((_normalized getOrDefault ["supplyCargo", createHashMap]) isEqualType createHashMap) then {
+        _normalized set ["supplyCargo", createHashMap];
+    };
 };
 
 _normalized

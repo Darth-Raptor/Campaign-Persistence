@@ -4,6 +4,8 @@
 params ["_object"];
 
 if (isNull _object) exitWith {false};
+if (_object getVariable ["PLP_disablePersistence", false]) exitWith {false};
+if (_object getVariable ["PLP_zeusPlaced", false] && {(crew _object findIf {!isPlayer _x}) >= 0}) exitWith {false};
 if (_object isKindOf "Bag_Base" && {!(_object getVariable ["PLP_persistent", false])}) exitWith {false};
 
 private _category = [_object] call PLP_fnc_getObjectCategory;

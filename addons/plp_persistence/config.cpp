@@ -31,14 +31,18 @@ class CfgFunctions
             class ensureServerState {};
             class getDefaultObjectId {};
             class getObjectCategory {};
+            class handleCuratorObjectPlaced {};
             class init { postInit = 1; };
             class isLogisticsPersistent {};
+            class isSupplyCargoPersistent {};
             class log {};
             class loadLogistics {};
             class normalizeLogisticsRecord {};
             class normalizePlayerData {};
+            class registerClientSaveTriggers {};
             class registerLogisticsObject {};
             class requestPlayerLoad {};
+            class requestSave {};
             class reapplyLogisticsCargo {};
             class saveAll {};
             class storePlayerData {};

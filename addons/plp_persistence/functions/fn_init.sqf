@@ -49,6 +49,21 @@ if (isServer) then {
             [] call PLP_fnc_saveAll;
         };
     };
+
+    [] spawn {
+        while {true} do {
+            {
+                if (!(_x getVariable ["PLP_curatorObjectPlacedEhAdded", false])) then {
+                    _x addEventHandler ["CuratorObjectPlaced", {
+                        _this call PLP_fnc_handleCuratorObjectPlaced;
+                    }];
+                    _x setVariable ["PLP_curatorObjectPlacedEhAdded", true];
+                };
+            } forEach allCurators;
+
+            sleep 10;
+        };
+    };
 };
 
 if (hasInterface) then {
@@ -60,7 +75,10 @@ if (hasInterface) then {
         player addEventHandler ["Respawn", {
             params ["_unit"];
             [_unit, getPlayerUID _unit] remoteExecCall ["PLP_fnc_requestPlayerLoad", 2];
+            [_unit] call PLP_fnc_registerClientSaveTriggers;
         }];
+
+        [player] call PLP_fnc_registerClientSaveTriggers;
 
         while {true} do {
             sleep (missionNamespace getVariable ["PLP_saveInterval", 120]);
