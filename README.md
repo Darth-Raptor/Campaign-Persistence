@@ -1,109 +1,161 @@
-# PLP Persistence
+# Campaign Persistence
 
-Player and logistics persistence for Arma 3 using CBA.
+Campaign Persistence is an Arma 3 persistence addon built around server authority and multiplayer safety.
 
-This is a source addon intended to be packed into a PBO. It persists:
+V1 includes player persistence, V2 adds server-authoritative logistics persistence, V3 adds server-authoritative vehicle persistence, and V4 adds server-authoritative ACE Fortify persistence. Each layer only activates when its matching Eden module is placed in the mission. The server is the sole authority for approving saves and restores. Pythia is required for backend storage, and ACE self interaction can expose an optional manual save request flow for players.
 
-- Player position, direction, loadout, damage, stance, and vehicle assignment.
-- Eden and Zeus placed logistics objects by default.
-- Object position, direction, damage, fuel, cargo inventories, nested container inventories, and custom variables.
+## V1 Status
 
-The default storage backend is `profileNamespace` on the dedicated server or host. It does not require extDB.
+V1 player persistence has been validated in hosted multiplayer testing for:
 
-## Folder Layout
+- position/location restore
+- loadout and ammo-state restore
+- health, treatment-state, and pain-state restore
+- ACE manual save
+- timed autosave
+- death fallback to the mission's default Eden spawn/state
+- server-authoritative save and restore approval
 
-```text
-addons/
-  plp_persistence/
-    config.cpp
-    functions/
-```
+## V1 Features
 
-Pack `addons/plp_persistence` into `plp_persistence.pbo` with Arma 3 Tools, Addon Builder, HEMTT, or your preferred PBO workflow.
+- Eden-module-gated player persistence
+- Per-feature toggles for position, loadout, ammo state, and health
+- Server-approved autosave and reconnect restore
+- Delete-on-death behavior
+- Optional ACE self action:
+  - `Campaign Persistence`
+  - `Confirm Save`
+- Pythia-backed JSON storage in `profiles\CampaignPersistenceData\players`
 
-The source addon includes `$PBOPREFIX$` so function paths resolve as `\plp_persistence\...` after packing.
+## V2 Features
 
-## Requirements
+- Eden-module-gated `Logistics Persistence`
+- Per-feature toggles for position, cargo, nested container cargo, damage, and supply state
+- Runtime-spawned logistics object support when enabled
+- Editor prop opt-in through object attributes:
+  - `Enable Logistics Persistence`
+  - `Persistence ID`
+- Tombstone handling so deleted or destroyed logistics objects stay gone
+- Pythia-backed JSON storage in `profiles\CampaignPersistenceData\logistics`
 
-- CBA_A3
+## V3 Features
+
+- Eden-module-gated `Vehicle Persistence`
+- Per-feature toggles for position, damage, fuel, inventory, nested inventory, service cargo, runtime vehicles, and vehicle ammo counts
+- Runtime-spawned vehicle persistence when enabled
+- AI-crewed runtime vehicles excluded from persistence
+- Player-to-vehicle restore linkage when both player and vehicle persistence are active
+- Tombstone handling so deleted or destroyed vehicles stay gone
+- Pythia-backed JSON storage in `profiles\CampaignPersistenceData\vehicles`
+
+## V4 Features
+
+- Eden-module-gated `Fortify Persistence`
+- Persists only objects placed through ACE Fortify
+- Per-feature toggles for position, damage, and remaining side budget
+- Tombstone handling so deleted or destroyed fortifications stay gone
+- Remaining ACE Fortify budget restore for active sides
+- Fortify-built objects that qualify for logistics can also participate in `Logistics Persistence`
+- Pythia-backed JSON storage in `profiles\CampaignPersistenceData\fortify`
 
 ## Mission Setup
 
-The addon starts automatically.
+1. Load the server and clients with:
+   - `@Campaign_Persistence`
+   - `Pythia`
+   - `ACE3`
+2. Pack `addons/campaign_persistence` into `campaign_persistence.pbo`.
+3. Place the built PBO in `@Campaign_Persistence\addons`.
+4. In Eden, place the `Player Persistence` module.
+5. If you want V2 logistics persistence, also place the `Logistics Persistence` module.
+6. If you want V3 vehicle persistence, also place the `Vehicle Persistence` module.
+7. If you want V4 ACE Fortify persistence, also place the `Fortify Persistence` module.
+8. Configure the module attributes for the persistence features you want enabled.
+9. For props or normally excluded objects, use the object attributes under `Campaign Persistence` to opt them into logistics persistence when needed.
 
-Objects placed in Eden or Zeus are persistent by default.
+If no `Player Persistence` module is placed, Campaign Persistence remains inactive.
 
-To force a specific object to be persistent:
+## Module Attributes
 
-```sqf
-this setVariable ["PLP_persistent", true, true];
-```
+- `Enable player persistence`
+- `Persist position/location`
+- `Persist loadout`
+- `Persist ammo / magazine state`
+- `Persist health / damage`
+- `Time between saves (seconds)`
+- `Enable ACE manual save action`
+- `Enable debug logging`
 
-To exclude a specific object from automatic persistence:
+`Persist ammo / magazine state` is ignored when `Persist loadout` is disabled.
 
-```sqf
-this setVariable ["PLP_persistenceDisabled", true, true];
-```
+## Logistics Module Attributes
 
-To force a specific persistence id, useful for editor-placed objects:
+- `Enable logistics persistence`
+- `Persist position/location`
+- `Persist inventory`
+- `Persist nested container inventory`
+- `Persist damage`
+- `Persist fuel/water/supply state`
+- `Include runtime-spawned logistics objects`
+- `Time between saves (seconds)`
+- `Enable debug logging`
 
-```sqf
-this setVariable ["PLP_persistenceId", "base_ammo_truck_01", true];
-this setVariable ["PLP_persistent", true, true];
-```
+`Persist nested container inventory` is ignored when `Persist inventory` is disabled.
 
-## CBA Settings
+## Fortify Module Attributes
 
-Settings are registered in CBA Addon Options under `PLP Persistence`.
+- `Enable fortify persistence`
+- `Persist position/location`
+- `Persist damage`
+- `Persist remaining side budget`
+- `Time between saves (seconds)`
+- `Enable debug logging`
 
-- General: save interval and mission-key mode.
-- Debug: optional RPT logging and log level.
-- Players: player position and damage persistence.
+## Server Authority Model
 
-The default key mode uses `worldName` plus `missionNameSource`, so persistence carries over when the mission PBO/source name is the same. Disable `Key by mission PBO` to fall back to `missionName`.
+- Clients can only request save/restore actions.
+- The server validates the requesting player, owner, module config, and alive state.
+- The server is the only side allowed to read or write persistent records.
+- The server can request client-local player state when it needs current data for an approved save.
+- Restore data is only applied after the server loads and validates the stored record.
 
-If your mission uses a restrictive `CfgRemoteExec`, whitelist these functions:
+## Pythia Layout
 
-```cpp
-class PLP_fnc_applyPlayerData { allowedTargets = 1; };
-class PLP_fnc_requestPlayerLoad { allowedTargets = 2; };
-class PLP_fnc_storePlayerData { allowedTargets = 2; };
-class PLP_fnc_saveAll { allowedTargets = 2; };
-class PLP_fnc_clearMissionData { allowedTargets = 2; };
-```
-
-## Admin Utilities
-
-Clear all saved data for the current mission:
-
-```sqf
-[] remoteExecCall ["PLP_fnc_clearMissionData", 2];
-```
-
-Force a save:
-
-```sqf
-[] remoteExecCall ["PLP_fnc_saveAll", 2];
-```
-
-When `Enable RPT logging` is turned on in CBA settings, PLP writes lines like this to the Arma RPT:
+Pythia is expected to load the Python entry module at:
 
 ```text
-[PLP] [INFO] Save complete | [...]
+@Campaign_Persistence\python_code\__init__.py
+@Campaign_Persistence\python_code\$PYTHIA$
 ```
 
-Delete the object you are looking at and save a deletion tombstone:
+This matches the official Pythia layout where `python_code` contains the `$PYTHIA$`
+marker file plus a root `__init__.py` that exposes the callable functions.
 
-```sqf
-[cursorObject] call PLP_fnc_deleteObjectAndSave;
+The backend writes durable player records into the server profile directory:
+
+```text
+profiles\CampaignPersistenceData\players
+profiles\CampaignPersistenceData\logistics
+profiles\CampaignPersistenceData\vehicles
+profiles\CampaignPersistenceData\fortify
 ```
 
-## Notes
+## Known Notes
 
-- Persistence keys include `worldName` and, by default, `missionNameSource`, so saves bleed across missions with the same PBO/source name on the same map.
-- Editor and Zeus placed logistics objects are saved by default. Individual objects can opt out with `PLP_persistenceDisabled`.
-- Backpacks and other containers inside saved objects have their internal cargo restored recursively.
-- Dynamically spawned logistics objects should receive a stable `PLP_persistenceId` if you want them to reload as the same object after restart.
-- Deleted objects are saved as deleted tombstones on the next save so Eden-placed objects do not reappear at their original positions.
-- Saved records are normalized and validated before restore. Invalid player or logistics records are skipped and logged when PLP RPT logging is enabled.
-- For a public server, move destructive admin utilities behind your admin framework before exposing them to players.
+- The `a3_characters_f` mission warning is a known Arma/Bohemia issue and is intentionally ignored here.
+- The current Stratis test mission still reports `Missing 'description.ext::Header'`.
+- Client and server should use matching CBA versions to avoid version-mismatch warnings in testing.
+- Vehicle ammo save-side capture is working, but vehicle ammo restore is not yet reliable enough for release validation. The `Persist vehicle ammo counts` option remains exposed and is currently treated as a known deferred post-release fix.
+
+## Remote Exec
+
+If your mission uses a restrictive `CfgRemoteExec`, allow these functions:
+
+```cpp
+class CP_fnc_applyPlayerState { allowedTargets = 1; };
+class CP_fnc_clientCollectState { allowedTargets = 1; };
+class CP_fnc_notifyClient { allowedTargets = 1; };
+class CP_fnc_serverHandleManualSaveRequest { allowedTargets = 2; };
+class CP_fnc_serverHandleRestoreRequest { allowedTargets = 2; };
+class CP_fnc_serverReceiveCollectedState { allowedTargets = 2; };
+```

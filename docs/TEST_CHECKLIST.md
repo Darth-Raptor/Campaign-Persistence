@@ -1,67 +1,87 @@
-# PLP Persistence Test Checklist
+# Campaign Persistence V1 Test Checklist
 
-Use this checklist after packing a new `plp_persistence.pbo`.
+## Mission Disabled
 
-## Single Player or Editor
+1. Launch Arma 3 with `@Campaign_Persistence`, `Pythia`, and `ACE3`.
+2. Open a mission in Eden without placing the `Player Persistence` module.
+3. Start the mission.
+4. Confirm no restore occurs and no ACE save action appears.
 
-1. Launch Arma 3 with CBA and `@PLP_Persistence`.
-2. Open the VR test mission in Eden.
-3. Place a player, one vehicle, and one supply crate.
-4. Start the mission.
-5. Move the player away from the start position.
-6. Put a rifle with a partially loaded magazine into the crate.
-7. Put a backpack into the crate, then put at least one item inside the backpack.
-8. Run a server save:
+## Mission Enabled
 
-```sqf
-[] remoteExecCall ["PLP_fnc_saveAll", 2];
-```
+1. Place the `Player Persistence` module.
+2. Enable the persistence features you want to test.
+3. Set `Time between saves (seconds)` to a short value such as `30`.
+4. Start the mission and move the player.
+5. If loadout persistence is enabled, modify gear and partially expend ammunition.
+6. If health persistence is enabled, take damage.
+7. Wait for an autosave or trigger `Campaign Persistence -> Confirm Save` through ACE self interaction.
+8. Disconnect and reconnect.
+9. Confirm only the enabled fields restore.
 
-9. Restart the mission.
-10. Confirm the player position, vehicle position, crate position, rifle, magazine ammo state, backpack, and backpack contents restored.
-11. Confirm restored crate items can be removed and moved normally.
-12. Delete the crate you are looking at:
+## Death Handling
 
-```sqf
-[cursorObject] remoteExecCall ["PLP_fnc_deleteObjectAndSave", 2];
-```
+1. Create a valid save.
+2. Die before disconnecting.
+3. Reconnect or restart the server.
+4. Confirm the saved player record was deleted and the player starts fresh.
 
-13. Save again, restart the mission, and confirm the crate does not reappear.
+## Restart Validation
 
-## Local Dedicated Server
+1. Create a valid save.
+2. Fully restart the dedicated server.
+3. Rejoin with the same UID.
+4. Confirm restore still works from the Pythia-backed store.
 
-1. Start the server with `-noBattlEye` and `BattlEye = 0`.
-2. Join with the client using the same PLP build and a compatible CBA version.
-3. Wait for RPT lines showing:
+## Verified V1 Results
 
-```text
-[PLP] [INFO] Initializing persistence
-[PLP] [INFO] Logistics load complete
-```
+- Position/location restore has been validated.
+- Loadout and ammo-state restore has been validated.
+- Health/damage, treatment, and pain-state restore have been validated.
+- Manual ACE save has been validated.
+- Autosave has been validated.
+- Disconnecting while dead correctly falls back to the default Eden state instead of the previous saved record.
 
-4. Move the player and modify crate cargo.
-5. Save:
+## Security Checks
 
-```sqf
-[] remoteExecCall ["PLP_fnc_saveAll", 2];
-```
+1. Confirm the server logs owner/UID mismatch warnings for malformed remote requests.
+2. Confirm a client cannot trigger a save for another player.
+3. Confirm manual save does nothing when the module disables ACE manual save.
 
-6. Wait for:
+## V2 Logistics Checks
 
-```text
-[PLP] [INFO] Save complete
-```
+1. Place the `Logistics Persistence` module and enable the fields you want to test.
+2. Move an editor-placed ammo crate, save, restart, and confirm its position restores.
+3. Change crate cargo, including a nested backpack, save, restart, and confirm the nested contents restore.
+4. Damage a persisted logistics object, save, restart, and confirm the damage state restores.
+5. Test a supported fuel or water logistics object and confirm its supply state restores.
+6. Spawn a qualifying runtime logistics object when runtime persistence is enabled, save, restart, and confirm it is recreated.
+7. Delete or destroy a persisted logistics object, save or wait for autosave, restart, and confirm the object stays gone.
+8. Opt a normally excluded prop into persistence with `Enable Logistics Persistence`, optionally set `Persistence ID`, and confirm it restores through the logistics layer.
 
-7. Disconnect and reconnect.
-8. Confirm player state and logistics state restored.
-9. Confirm restored crate cargo can be removed.
-10. Stop and restart the dedicated server.
-11. Reconnect and repeat the same restore checks.
+## V3 Vehicle Checks
 
-## Expected RPT Signals
+1. Place the `Vehicle Persistence` module and enable the fields you want to test.
+2. Move and save an editor-placed vehicle, restart, and confirm its position restores.
+3. Damage a persisted vehicle, save, restart, and confirm the damage state restores.
+4. Change vehicle fuel, save, restart, and confirm the fuel state restores.
+5. Change vehicle transport cargo, including nested container cargo when enabled, save, restart, and confirm the cargo restores.
+6. Spawn a qualifying runtime vehicle when runtime persistence is enabled, save, restart, and confirm it is recreated.
+7. Spawn a runtime vehicle with AI already inside it and confirm it is excluded from persistence.
+8. Delete or destroy a persisted vehicle, save or wait for autosave, restart, and confirm the vehicle stays gone.
+9. Save a player while seated in a persisted vehicle, restart, and confirm the player restores back into the vehicle when both records are valid.
 
-- `Loaded profileNamespace state` shows nonzero records after a successful save.
-- `Logistics load complete` has `skipped = 0` for clean saved data.
-- `Reapplied logistics cargo` has `skipped = 0` for clean reconnect/JIP cargo reapply.
-- `Save complete` shows expected player and object counts.
+## Known V3 Release Limitation
 
+- Vehicle damage persistence has been validated.
+- Vehicle ammo save-side capture has been validated.
+- Vehicle ammo restore is still a known deferred issue and should be treated as post-release follow-up work.
+
+## V4 Fortify Checks
+
+1. Place the `Fortify Persistence` module and configure the fields you want to test.
+2. Use ACE Fortify to place a fortification, save, restart, and confirm it restores in the correct location and orientation.
+3. Damage a Fortify-built object, save, restart, and confirm the damage restores when enabled.
+4. Spend Fortify budget, save, restart, and confirm the remaining budget restores.
+5. Delete or destroy a Fortify-built object, save or wait for autosave, restart, and confirm it stays gone.
+6. Build a Fortify object that also qualifies for logistics cargo, add cargo, save, restart, and confirm the object restores through Fortify while cargo restores through Logistics without duplication.

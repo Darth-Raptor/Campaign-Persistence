@@ -1,26 +1,16 @@
 # Packed/generated addon output
 build/
-@PLP_Persistence/
+@Campaign_Persistence/addons/*.pbo
+@Campaign_Persistence/addons/*.bisign
 *.pbo
 *.bisign
 
 # Arma/server runtime state
-server_profiles/
 *.rpt
 *.log
 *.vars.Arma3Profile
 *.Arma3Profile
-
-# Mission unpack/repack scratch and backups
-mission_backups/
-mission_pack_test/
-mission_pack_test2/
-mission_recheck/
-characters_unpack/
-
-# Keep the editable test mission source out of version control for now.
-# It contains local test-only server/debug settings.
-mission_unpack/
+@Campaign_Persistence/data/
 
 # Windows/editor noise
 Thumbs.db
@@ -28,3 +18,4 @@ Desktop.ini
 .DS_Store
 .vscode/
 .idea/
+__pycache__/

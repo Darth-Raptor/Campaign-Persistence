@@ -1,0 +1,4 @@
+prefix=a3\characters_f\
+product=Arma 3
+version=151039
+hash=7BAA85E7DCB20C60669847015332A9FDAF3A0999

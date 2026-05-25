@@ -1,51 +1,33 @@
 # Build Notes
 
-## Version 0.2.0
-
-Base stabilization checkpoint: `48db80b Stabilize SQF persistence core`
-
-Status:
-
-- SQF persistence core stabilized with schema metadata, record normalization, and validation.
-- Server-authoritative crate/container restore path verified on a local dedicated server.
-- Vehicle, crate, player, nested backpack, removable restored cargo, and loaded magazine ammo persistence have been tested successfully.
-- Category and class-name persistence disable settings were removed. Logistics persistence is now default-on, with per-object opt-out through `PLP_persistenceDisabled`.
-
-## Version 0.2.1
-
-Status:
-
-- Fixed hosted dedicated server compatibility issue where HashMap normalization used unary copy syntax that could produce a scalar/NaN value before `getOrDefault`.
-- Player and logistics normalization now updates the validated HashMap record directly.
-
-## Version 0.2.2
-
-Status:
-
-- Added an idempotent server-state bootstrap used by save, load, clear, delete, store, upsert, and reconnect cargo reapply paths.
-- Hardened admin/debug calls made before normal postInit state is available or during mission transitions.
-- Removed another HashMap/array unary-copy use from `saveAll`.
-
-## Packing
-
-When Arma and the dedicated server are closed, pack:
-
-```powershell
-robocopy 'C:\Users\JustF\Documents\New project 2\addons\plp_persistence' 'P:\plp_persistence' /MIR /XD .git /XF *.pbo *.log
-& 'C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe' 'P:\plp_persistence' 'C:\Users\JustF\Documents\New project 2\build' -packonly -clear -prefix=plp_persistence -project=P:\ -toolsDirectory='C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools'
-```
-
-Then copy the built PBO to:
+Pack `addons/campaign_persistence` into `campaign_persistence.pbo`, then place the output in:
 
 ```text
-C:\Users\JustF\Documents\New project 2\@PLP_Persistence\addons\plp_persistence.pbo
-C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Server\@PLP_Persistence\addons\plp_persistence.pbo
+C:\Users\JustF\Documents\New project 2\@Campaign_Persistence\addons\campaign_persistence.pbo
 ```
 
-Verify:
+Keep the Python package directory in the mod root as:
 
-```powershell
-& 'C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\BankRev\BankRev.exe' -lf 'C:\Users\JustF\Documents\New project 2\build\plp_persistence.pbo'
+```text
+@Campaign_Persistence\python_code\$PYTHIA$
+@Campaign_Persistence\python_code\__init__.py
 ```
 
-Do not replace the server PBO while the dedicated server is running.
+The runtime persistence data directory is created automatically:
+
+```text
+profiles\CampaignPersistenceData\players
+profiles\CampaignPersistenceData\logistics
+profiles\CampaignPersistenceData\vehicles
+profiles\CampaignPersistenceData\fortify
+```
+
+## Current Cleanup Notes
+
+- Ignore the known `a3_characters_f` warning from Arma itself.
+- The current Stratis test mission still needs a mission-source-side `description.ext::Header` cleanup if you want a warning-free mission package.
+- Keep client and server CBA versions matched during testing to avoid version-mismatch warnings in the RPT.
+- `Logistics Persistence` is fully server-side. No client remote execution path was added for logistics saves or restores.
+- Keep `persistent = 0;` in the server config for the current local test workflow.
+- `Vehicle Persistence` is release-ready except for vehicle ammo restore, which remains a known deferred post-release fix.
+- `Fortify Persistence` assumes ACE Fortify presets, tools, and build-area rules are already configured by the mission or server; Campaign Persistence only persists the runtime Fortify state.

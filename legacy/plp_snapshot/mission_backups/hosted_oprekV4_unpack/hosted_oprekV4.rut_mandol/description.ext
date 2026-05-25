@@ -1,0 +1,43 @@
+disableChannels[] = {
+	{0, true, true}, //--- Global Chat
+	{1, true, true}, //--- Side Chat
+	{2, true, true}, //--- Command Chat
+	{3, false, false}, //--- Group Chat
+	{4, false, false}, //--- Vehicle Chat
+	{5, false, false}, //--- Direct Chat
+	{6, true, true} //--- System Chat
+};
+
+class CfgDebriefing
+{
+	class MODMISMATCH
+	{
+		title = "Mod Mismatch";
+		subtitle = "";
+		description = "Your loaded mods do not match the TF20 server requirements. Load all required TF20 Server Pack mods and only approved optional mods.";
+	};
+	class ENDROLE
+	{
+		title = "Reserved Slot";
+		subtitle = "";
+		description = "You are in a reserved slot, choose another slot.";
+	};
+};
+
+class CfgFunctions
+{
+	class TFO
+	{
+		class functions
+		{
+			class acrePreset           { file = "scripts\fn_acrePreset.sqf"; };
+			class modcheck             { file = "scripts\fn_modcheck.sqf"; };
+			class slots                { file = "scripts\fn_slots.sqf"; };
+		};
+	};
+};
+
+respawn=3;
+respawnDelay=2;
+respawnOnStart=-1;
+enableDebugConsole = 1;

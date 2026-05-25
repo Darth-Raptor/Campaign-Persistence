@@ -1,0 +1,1 @@
+prefix=Users\JustF\Documents\New project 2\addons\campaign_persistence\

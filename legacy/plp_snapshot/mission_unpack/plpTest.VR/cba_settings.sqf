@@ -1,0 +1,11 @@
+PLP_saveInterval = 30;
+PLP_keyByMissionPbo = true;
+PLP_logEnabled = true;
+PLP_logLevel = "INFO";
+PLP_persistPlayerPosition = true;
+PLP_persistPlayerDamage = true;
+PLP_disabledVehicleClasses = "";
+PLP_disabledCrateClasses = "B_CargoNet_01_ammo_F";
+PLP_disabledStaticClasses = "";
+PLP_disabledObjectClasses = "";
+PLP_disabledAllClasses = "";
