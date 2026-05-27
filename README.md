@@ -16,7 +16,7 @@ V1 player persistence has been validated in hosted multiplayer testing for:
 - death fallback to the mission's default Eden spawn/state
 - server-authoritative save and restore approval
 
-## V1 Features
+## Player Persistence Features
 
 - Eden-module-gated player persistence
 - Per-feature toggles for position, loadout, ammo state, and health
@@ -27,7 +27,7 @@ V1 player persistence has been validated in hosted multiplayer testing for:
   - `Confirm Save`
 - Pythia-backed JSON storage in `profiles\CampaignPersistenceData\players`
 
-## V2 Features
+## Logistics Persistence Features
 
 - Eden-module-gated `Logistics Persistence`
 - Per-feature toggles for position, cargo, nested container cargo, damage, and supply state
@@ -38,7 +38,7 @@ V1 player persistence has been validated in hosted multiplayer testing for:
 - Tombstone handling so deleted or destroyed logistics objects stay gone
 - Pythia-backed JSON storage in `profiles\CampaignPersistenceData\logistics`
 
-## V3 Features
+## Vehicle Persistence Features
 
 - Eden-module-gated `Vehicle Persistence`
 - Per-feature toggles for position, damage, fuel, inventory, nested inventory, service cargo, runtime vehicles, and vehicle ammo counts
@@ -48,7 +48,7 @@ V1 player persistence has been validated in hosted multiplayer testing for:
 - Tombstone handling so deleted or destroyed vehicles stay gone
 - Pythia-backed JSON storage in `profiles\CampaignPersistenceData\vehicles`
 
-## V4 Features
+## Fortify Persistence Features
 
 - Eden-module-gated `Fortify Persistence`
 - Persists only objects placed through ACE Fortify
