@@ -128,6 +128,12 @@ if (hasInterface) then {
     [] spawn {
         waitUntil {sleep 0.25; !isNull player && {local player} && {getPlayerUID player isNotEqualTo ""}};
 
+        if !(missionNamespace getVariable ["CP_originalSpawnCaptured", false]) then {
+            missionNamespace setVariable ["CP_originalSpawnPosASL", getPosASL player];
+            missionNamespace setVariable ["CP_originalSpawnDir", getDir player];
+            missionNamespace setVariable ["CP_originalSpawnCaptured", true];
+        };
+
         waitUntil {sleep 0.25; missionNamespace getVariable ["CP_serverConfigInitialized", false]};
 
         private _playerConfig = [] call CP_fnc_getServerConfig;

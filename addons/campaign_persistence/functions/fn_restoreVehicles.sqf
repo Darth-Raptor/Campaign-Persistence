@@ -32,12 +32,19 @@ private _skipped = 0;
             [_vehicle, _id] call CP_fnc_registerVehicle;
 
             if (_x param [CP_VEH_RECORD_HAS_POSITION, false]) then {
+                private _savedPosASL = _x param [CP_VEH_RECORD_POS_ASL, getPosASL _vehicle, [[]]];
+                private _resolvedPosASL = [_vehicle, _savedPosASL] call CP_fnc_findSafeVehiclePlacementASL;
+
                 _vehicle setDir (_x param [CP_VEH_RECORD_DIR, getDir _vehicle, [0]]);
                 private _vectorUp = _x param [CP_VEH_RECORD_VECTOR_UP, vectorUp _vehicle, [[]]];
                 if (_vectorUp isEqualType [] && {(count _vectorUp) isEqualTo 3}) then {
                     _vehicle setVectorUp _vectorUp;
                 };
-                _vehicle setPosASL (_x param [CP_VEH_RECORD_POS_ASL, getPosASL _vehicle, [[]]]);
+                _vehicle setPosASL _resolvedPosASL;
+
+                if ((_savedPosASL distance2D _resolvedPosASL) > 0.5) then {
+                    ["WARN", "Adjusted a vehicle restore position to avoid an unsafe overlap.", [_id, _savedPosASL, _resolvedPosASL]] call CP_fnc_log;
+                };
             };
 
             if (_x param [CP_VEH_RECORD_HAS_FUEL, false]) then {

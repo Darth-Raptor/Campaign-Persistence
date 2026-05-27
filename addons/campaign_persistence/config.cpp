@@ -65,8 +65,10 @@ class CfgFunctions
             class getLogisticsCategory {};
             class getLogisticsConfig {};
             class getServerConfig {};
+            class getVehicleSafetyRadius {};
             class getVehicleCategory {};
             class getVehicleConfig {};
+            class findSafeVehiclePlacementASL {};
             class init {postInit = 1;};
             class isAuthorizedRemoteOwner {};
             class isFortifyObjectPersistent {};
@@ -96,6 +98,7 @@ class CfgFunctions
             class registerLogisticsObject {};
             class registerVehicle {};
             class requestManualSave {};
+            class requestPositionReset {};
             class restoreFortifyBudgets {};
             class restoreFortifyObjects {};
             class restoreLogistics {};
