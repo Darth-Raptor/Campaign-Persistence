@@ -98,6 +98,7 @@ class CfgFunctions
             class registerLogisticsObject {};
             class registerVehicle {};
             class requestManualSave {};
+            class requestPositionReset {};
             class restoreFortifyBudgets {};
             class restoreFortifyObjects {};
             class restoreLogistics {};
