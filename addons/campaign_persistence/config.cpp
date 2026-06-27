@@ -65,10 +65,8 @@ class CfgFunctions
             class getLogisticsCategory {};
             class getLogisticsConfig {};
             class getServerConfig {};
-            class getVehicleSafetyRadius {};
             class getVehicleCategory {};
             class getVehicleConfig {};
-            class findSafeVehiclePlacementASL {};
             class init {postInit = 1;};
             class isAuthorizedRemoteOwner {};
             class isFortifyObjectPersistent {};
@@ -87,7 +85,7 @@ class CfgFunctions
             class log {};
             class notifyClient {};
             class preInit {preInit = 1;};
-            class primeVehicleRegistration {};
+            class registerFirstUseEventHandlers {};
             class refreshFortifyModuleConfig {};
             class refreshLogisticsModuleConfig {};
             class refreshModuleConfig {};
@@ -98,12 +96,13 @@ class CfgFunctions
             class registerLogisticsObject {};
             class registerVehicle {};
             class requestManualSave {};
-            class requestPositionReset {};
             class restoreFortifyBudgets {};
             class restoreFortifyObjects {};
             class restoreLogistics {};
             class restorePlayerVehicleLink {};
             class restoreVehicles {};
+            class serverRegisterLogisticsFirstUse {};
+            class serverRegisterVehicleFirstUse {};
             class sanitizeFortifyConfig {};
             class sanitizeLogisticsConfig {};
             class sanitizeModuleConfig {};

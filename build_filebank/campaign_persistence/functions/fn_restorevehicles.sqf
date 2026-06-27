@@ -3,8 +3,6 @@ if (!isServer) exitWith {};
 private _config = [] call CP_fnc_getVehicleConfig;
 if !([_config] call CP_fnc_isVehiclePersistenceActive) exitWith {};
 
-[] call CP_fnc_primeVehicleRegistration;
-
 private _records = [] call CP_fnc_loadVehicleRecords;
 private _loaded = 0;
 private _deleted = 0;

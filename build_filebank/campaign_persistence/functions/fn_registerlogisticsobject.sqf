@@ -24,11 +24,12 @@ if !(_assignedId isEqualType "") then {
 };
 
 if (_assignedId isEqualTo "") then {
-    if (!(missionNamespace getVariable ["CP_logisticsStartupRegistrationComplete", false])) then {
+    private _category = [_object] call CP_fnc_getLogisticsCategory;
+    if ((_category isNotEqualTo "") && {_object getVariable ["CP_isStartupLogisticsPersistenceCandidate", false]}) then {
         _assignedId = [_object] call CP_fnc_getDefaultLogisticsId;
     } else {
         private _config = [] call CP_fnc_getLogisticsConfig;
-        if (_config param [CP_LOG_CFG_INCLUDE_RUNTIME, false]) then {
+        if ((_category isEqualTo "prop") || {_config param [CP_LOG_CFG_INCLUDE_RUNTIME, false]}) then {
             _assignedId = format ["runtime:%1:%2:%3", typeOf _object, round (serverTime * 100), floor (random 1000000)];
         };
     };

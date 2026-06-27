@@ -24,7 +24,7 @@ if !(_assignedId isEqualType "") then {
 };
 
 if (_assignedId isEqualTo "") then {
-    if (!(missionNamespace getVariable ["CP_vehicleStartupRegistrationComplete", false])) then {
+    if (_object getVariable ["CP_isStartupVehiclePersistenceCandidate", false]) then {
         _assignedId = [_object] call CP_fnc_getDefaultVehicleId;
     } else {
         private _config = [] call CP_fnc_getVehicleConfig;

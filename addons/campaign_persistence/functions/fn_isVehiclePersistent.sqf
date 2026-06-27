@@ -21,8 +21,4 @@ if (!(_existingId isEqualType "")) then {
     };
 };
 if (_existingId isNotEqualTo "") exitWith {true};
-
-if !(missionNamespace getVariable ["CP_vehicleStartupRegistrationComplete", false]) exitWith {true};
-if !(_config param [CP_VEH_CFG_INCLUDE_RUNTIME, false]) exitWith {false};
-
-true
+false

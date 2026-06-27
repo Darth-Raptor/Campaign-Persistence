@@ -14,8 +14,6 @@ if (_object isKindOf "Tank") exitWith {""};
 if (_object isKindOf "Car") exitWith {""};
 if (_object isKindOf "Bag_Base") exitWith {""};
 
-if (_object getVariable ["CP_enableLogisticsPersistence", false]) exitWith {"prop"};
-
 private _supplyClasses = [
     "storagebladder_01_fuel_sand_f",
     "storagebladder_01_fuel_forest_f",
@@ -38,4 +36,6 @@ private _hasCargoCapacity =
     (getNumber (_vehicleConfig >> "transportMaxBackpacks") > 0);
 
 if (_hasCargoCapacity) exitWith {"container"};
+
+if (_object getVariable ["CP_enableLogisticsPersistence", false]) exitWith {"prop"};
 ""

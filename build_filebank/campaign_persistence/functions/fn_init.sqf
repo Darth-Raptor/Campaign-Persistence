@@ -1,4 +1,8 @@
 if (isServer) then {
+    if (missionNamespace getVariable ["CP_serverInitStarted", false]) exitWith {};
+    missionNamespace setVariable ["CP_serverInitStarted", true];
+    missionNamespace setVariable ["CP_serverInitCompleted", false, true];
+
     private _runtimeMissionId = missionName;
     if (_runtimeMissionId isEqualTo "") then {
         _runtimeMissionId = missionNameSource;
@@ -6,7 +10,7 @@ if (isServer) then {
     missionNamespace setVariable ["CP_runtimeMissionId", _runtimeMissionId, true];
 
     [] spawn {
-        sleep 1;
+        waitUntil {sleep 0.25; time > 0};
         [] call CP_fnc_refreshModuleConfig;
         [] call CP_fnc_refreshFortifyModuleConfig;
         [] call CP_fnc_refreshLogisticsModuleConfig;
@@ -14,6 +18,12 @@ if (isServer) then {
         [] call CP_fnc_registerFortifyEventHandlers;
 
         if ([] call CP_fnc_isVehiclePersistenceActive) then {
+            {
+                if (!isNull _x && {([_x] call CP_fnc_getVehicleCategory) isNotEqualTo ""}) then {
+                    _x setVariable ["CP_isStartupVehiclePersistenceCandidate", true, true];
+                };
+            } forEach (allMissionObjects "All");
+
             private _simulationDelay = missionNamespace getVariable ["CP_vehicleStartupSimulationDelay", 10];
             {
                 if (!isNull _x) then {
@@ -44,12 +54,15 @@ if (isServer) then {
         };
 
         if ([] call CP_fnc_isLogisticsPersistenceActive) then {
+            {
+                if (!isNull _x && {([_x] call CP_fnc_getLogisticsCategory) isNotEqualTo ""}) then {
+                    _x setVariable ["CP_isStartupLogisticsPersistenceCandidate", true, true];
+                };
+            } forEach (allMissionObjects "All");
+
             [] call CP_fnc_restoreLogistics;
             [] call CP_fnc_saveAllLogistics;
         };
-
-        missionNamespace setVariable ["CP_vehicleStartupRegistrationComplete", true, true];
-        missionNamespace setVariable ["CP_logisticsStartupRegistrationComplete", true, true];
 
         addMissionEventHandler ["EntityKilled", {
             params ["_entity"];
@@ -65,16 +78,22 @@ if (isServer) then {
                     ["INFO", "Saved fortify tombstone because the object was destroyed.", _fortifyRecord param [CP_FOR_RECORD_ID, "", [""]]] call CP_fnc_log;
                 };
 
-                private _vehicleRecord = [_entity, true] call CP_fnc_buildVehicleRecord;
-                if !(_vehicleRecord isEqualTo []) then {
-                    [_vehicleRecord] call CP_fnc_saveVehicleRecord;
-                    ["INFO", "Saved vehicle tombstone because the object was destroyed.", _vehicleRecord param [CP_VEH_RECORD_ID, "", [""]]] call CP_fnc_log;
+                private _vehicleConfig = [] call CP_fnc_getVehicleConfig;
+                if ([_entity, _vehicleConfig] call CP_fnc_isVehiclePersistent) then {
+                    private _vehicleRecord = [_entity, true] call CP_fnc_buildVehicleRecord;
+                    if !(_vehicleRecord isEqualTo []) then {
+                        [_vehicleRecord] call CP_fnc_saveVehicleRecord;
+                        ["INFO", "Saved vehicle tombstone because the object was destroyed.", _vehicleRecord param [CP_VEH_RECORD_ID, "", [""]]] call CP_fnc_log;
+                    };
                 };
 
-                private _record = [_entity, true] call CP_fnc_buildLogisticsRecord;
-                if !(_record isEqualTo []) then {
-                    [_record] call CP_fnc_saveLogisticsRecord;
-                    ["INFO", "Saved logistics tombstone because the object was destroyed.", _record param [CP_LOG_RECORD_ID, "", [""]]] call CP_fnc_log;
+                private _logisticsConfig = [] call CP_fnc_getLogisticsConfig;
+                if ([_entity, _logisticsConfig] call CP_fnc_isLogisticsPersistent) then {
+                    private _record = [_entity, true] call CP_fnc_buildLogisticsRecord;
+                    if !(_record isEqualTo []) then {
+                        [_record] call CP_fnc_saveLogisticsRecord;
+                        ["INFO", "Saved logistics tombstone because the object was destroyed.", _record param [CP_LOG_RECORD_ID, "", [""]]] call CP_fnc_log;
+                    };
                 };
             };
         }];
@@ -88,16 +107,22 @@ if (isServer) then {
                     ["INFO", "Saved fortify tombstone because the object was deleted.", _fortifyRecord param [CP_FOR_RECORD_ID, "", [""]]] call CP_fnc_log;
                 };
 
-                private _vehicleRecord = [_entity, true] call CP_fnc_buildVehicleRecord;
-                if !(_vehicleRecord isEqualTo []) then {
-                    [_vehicleRecord] call CP_fnc_saveVehicleRecord;
-                    ["INFO", "Saved vehicle tombstone because the object was deleted.", _vehicleRecord param [CP_VEH_RECORD_ID, "", [""]]] call CP_fnc_log;
+                private _vehicleConfig = [] call CP_fnc_getVehicleConfig;
+                if ([_entity, _vehicleConfig] call CP_fnc_isVehiclePersistent) then {
+                    private _vehicleRecord = [_entity, true] call CP_fnc_buildVehicleRecord;
+                    if !(_vehicleRecord isEqualTo []) then {
+                        [_vehicleRecord] call CP_fnc_saveVehicleRecord;
+                        ["INFO", "Saved vehicle tombstone because the object was deleted.", _vehicleRecord param [CP_VEH_RECORD_ID, "", [""]]] call CP_fnc_log;
+                    };
                 };
 
-                private _record = [_entity, true] call CP_fnc_buildLogisticsRecord;
-                if !(_record isEqualTo []) then {
-                    [_record] call CP_fnc_saveLogisticsRecord;
-                    ["INFO", "Saved logistics tombstone because the object was deleted.", _record param [CP_LOG_RECORD_ID, "", [""]]] call CP_fnc_log;
+                private _logisticsConfig = [] call CP_fnc_getLogisticsConfig;
+                if ([_entity, _logisticsConfig] call CP_fnc_isLogisticsPersistent) then {
+                    private _record = [_entity, true] call CP_fnc_buildLogisticsRecord;
+                    if !(_record isEqualTo []) then {
+                        [_record] call CP_fnc_saveLogisticsRecord;
+                        ["INFO", "Saved logistics tombstone because the object was deleted.", _record param [CP_LOG_RECORD_ID, "", [""]]] call CP_fnc_log;
+                    };
                 };
             };
         }];
@@ -121,6 +146,8 @@ if (isServer) then {
         [] spawn CP_fnc_serverFortifyAutosaveLoop;
         [] spawn CP_fnc_serverLogisticsAutosaveLoop;
         [] spawn CP_fnc_serverVehicleAutosaveLoop;
+
+        missionNamespace setVariable ["CP_serverInitCompleted", true, true];
     };
 };
 
@@ -137,6 +164,8 @@ if (hasInterface) then {
             [player, getPlayerUID player] remoteExecCall ["CP_fnc_serverHandleRestoreRequest", 2];
         };
 
+        [] call CP_fnc_registerFirstUseEventHandlers;
+
         player addEventHandler ["Respawn", {
             [] spawn {
                 waitUntil {sleep 0.25; !isNull player && {local player} && {getPlayerUID player isNotEqualTo ""}};
@@ -148,6 +177,8 @@ if (hasInterface) then {
                     [] call CP_fnc_registerAceActions;
                     [player, getPlayerUID player] remoteExecCall ["CP_fnc_serverHandleRestoreRequest", 2];
                 };
+
+                [] call CP_fnc_registerFirstUseEventHandlers;
             };
         }];
     };

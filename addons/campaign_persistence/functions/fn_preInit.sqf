@@ -164,12 +164,12 @@ if (isNil "CP_aceActionsRegistered") then {
     CP_aceActionsRegistered = false;
 };
 
-if (isNil "CP_logisticsStartupRegistrationComplete") then {
-    CP_logisticsStartupRegistrationComplete = false;
+if (isNil "CP_serverInitStarted") then {
+    CP_serverInitStarted = false;
 };
 
-if (isNil "CP_vehicleStartupRegistrationComplete") then {
-    CP_vehicleStartupRegistrationComplete = false;
+if (isNil "CP_serverInitCompleted") then {
+    CP_serverInitCompleted = false;
 };
 
 if (isNil "CP_fortifyEventHandlersRegistered") then {

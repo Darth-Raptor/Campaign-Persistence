@@ -85,7 +85,7 @@ class CfgFunctions
             class log {};
             class notifyClient {};
             class preInit {preInit = 1;};
-            class primeVehicleRegistration {};
+            class registerFirstUseEventHandlers {};
             class refreshFortifyModuleConfig {};
             class refreshLogisticsModuleConfig {};
             class refreshModuleConfig {};
@@ -101,6 +101,8 @@ class CfgFunctions
             class restoreLogistics {};
             class restorePlayerVehicleLink {};
             class restoreVehicles {};
+            class serverRegisterLogisticsFirstUse {};
+            class serverRegisterVehicleFirstUse {};
             class sanitizeFortifyConfig {};
             class sanitizeLogisticsConfig {};
             class sanitizeModuleConfig {};

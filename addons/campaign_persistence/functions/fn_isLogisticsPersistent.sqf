@@ -20,9 +20,17 @@ if (!(_existingId isEqualType "")) then {
 };
 if (_existingId isNotEqualTo "") exitWith {true};
 
-private _explicitOptIn = _object getVariable ["CP_enableLogisticsPersistence", false];
-if (_explicitOptIn) exitWith {true};
+private _includeRuntime = _config param [CP_LOG_CFG_INCLUDE_RUNTIME, false];
+private _isStartupObject = _object getVariable ["CP_isStartupLogisticsPersistenceCandidate", false];
 
-if !(missionNamespace getVariable ["CP_logisticsStartupRegistrationComplete", false]) exitWith {true};
-
-_config param [CP_LOG_CFG_INCLUDE_RUNTIME, false]
+switch (_category) do {
+    case "supply": {
+        _isStartupObject || _includeRuntime
+    };
+    case "prop": {
+        true
+    };
+    default {
+        false
+    };
+}
